@@ -78,6 +78,24 @@
         let timerInterval;
         let rodando = false;
 
+        function tocarAlarme() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.5); // Toca durante meio segundo
+    } catch (e) {
+        console.log('Áudio não suportado ou bloqueado pelo navegador.');
+    }
+}
         function alternarJogo() {
             const botao = document.getElementById('btn-acao');
             const cronometroEl = document.getElementById('cronometro');
@@ -104,7 +122,7 @@
                     });
 
                 // Inicia o cronômetro regressivo (ex: 60 segundos)
-                let tempo = 60;
+                let tempo = 90;
                 timerInterval = setInterval(() => {
                     let min = Math.floor(tempo / 60);
                     let seg = tempo % 60;
@@ -113,11 +131,14 @@
                     if (tempo-- < 0) {
                         clearInterval(timerInterval);
                         cronometroEl.textContent = "Tempo Esgotado!";
+
+                        tocarAlarme()
                         pararJogo();
                     }
                 }, 1000);
 
             } else {
+                
                 // --- PARAR / REINICIAR A QUALQUER MOMENTO ---
                 pararJogo();
             }
