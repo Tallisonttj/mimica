@@ -138,9 +138,8 @@ app.get('/api/sortear', (req: Request, res: Response) => {
     const futebol = sortearDaCategoria('futebol');
     const objeto = sortearDaCategoria('objeto');
     const figura = sortearDaCategoria('figura');
-    const placas = sortearDaCategoria('placas');
 
-    res.json({ futebol, objeto, figura, placas });
+    res.json({ futebol, objeto, figura });
 });
 
 // Endpoint para resetar as palavras e colocá-las de volta nas disponíveis

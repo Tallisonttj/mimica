@@ -3,101 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafio das 3 Palavras (API)</title>
+    <title>Jogo de Mímica / Palavras</title>
     <style>
-        :root { --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --accent: #38bdf8; }
-        body { font-family: sans-serif; background-color: var(--bg); color: var(--text); padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .container { background-color: var(--card-bg); padding: 1.5rem; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; box-sizing: border-box; }
-        .timer { font-size: 2.2rem; font-weight: bold; margin: 0.8rem 0; color: #fbbf24; }
-        .word-card { background: #0f172a; border-radius: 10px; padding: 0.8rem; margin: 0.6rem 0; border-left: 5px solid var(--accent); text-align: left; }
-        .word-category { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; }
-        .word-content { font-size: 1.1rem; font-weight: bold; margin-top: 2px; }
-        .word-difficulty { font-size: 0.75rem; color: #38bdf8; float: right; }
-        button { background-color: #3b82f6; color: white; border: none; padding: 0.8rem; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 1rem; }
-        button:disabled { background-color: #475569; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; }
+        .palavra-box {
+            background: #2d2d2d;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-size: 1.2rem;
+        }
+        #cronometro {
+            font-size: 2.5rem;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: 0.2s;
+        }
+        button.parar {
+            background-color: #d9534f;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Desafio Relâmpago</h1>
-        <div class="timer" id="timerDisplay">01:30</div>
+        <h1>Desafio de Palavras</h1>
+        
+        <div id="cronometro">00:00</div>
 
-        <div class="word-card">
-            <span class="word-difficulty" id="diffFutebol">-</span>
-            <div class="word-category">⚽ Futebol</div>
-            <div class="word-content" id="wordFutebol">Aperte Iniciar</div>
+        <div class="palavra-box">
+            <strong>Futebol:</strong> <span id="futebol">-</span>
+        </div>
+        <div class="palavra-box">
+            <strong>Objeto:</strong> <span id="objeto">-</span>
+        </div>
+        <div class="palavra-box">
+            <strong>Figura:</strong> <span id="figura">-</span>
         </div>
 
-        <div class="word-card">
-            <span class="word-difficulty" id="diffObjeto">-</span>
-            <div class="word-category">📦 Objeto</div>
-            <div class="word-content" id="wordObjeto">Aperte Iniciar</div>
-        </div>
-
-        <div class="word-card">
-            <span class="word-difficulty" id="diffFigura">-</span>
-            <div class="word-category">🌟 Figura Famosa</div>
-            <div class="word-content" id="wordFigura">Aperte Iniciar</div>
-        </div>
-
-        <button id="btnAction" onclick="buscarProximaRodada()">Iniciar Rodada</button>
+        <br>
+        <button id="btn-acao" onclick="alternarJogo()">Iniciar</button>
     </div>
 
     <script>
-        // Substitua pelo IP da sua máquina se testar na mesma rede Wi-Fi, ou URL se hospedar no Railway/Render
-        const API_URL = 'http://localhost:3000/api/sortear';
-        let timerInterval = null;
-        let tempoRestante = 90;
+        const API_URL = 'https://mimica-rqz7.onrender.com/api/sortear';
+        let timerInterval;
+        let rodando = false;
 
-        async function buscarProximaRodada() {
-            try {
-                document.getElementById('btnAction').disabled = true;
-                document.getElementById('btnAction').innerText = "Carregando...";
+        function alternarJogo() {
+            const botao = document.getElementById('btn-acao');
+            const cronometroEl = document.getElementById('cronometro');
 
-                const resposta = await fetch(API_URL);
-                const dados = await resposta.json();
+            if (!rodando) {
+                // --- INICIAR ---
+                rodando = true;
+                botao.textContent = "Parar / Reiniciar";
+                botao.classList.add('parar');
 
-                document.getElementById('wordFutebol').innerText = dados.futebol.palavra;
-                document.getElementById('diffFutebol').innerText = dados.futebol.nivel;
+                // Busca as palavras na API do Render
+                fetch(API_URL)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('futebol').textContent = `${data.futebol.palavra} (${data.futebol.nivel})`;
+                        document.getElementById('objeto').textContent = `${data.objeto.palavra} (${data.objeto.nivel})`;
+                        document.getElementById('figura').textContent = `${data.figura.palavra} (${data.figura.nivel})`;
 
-                document.getElementById('wordObjeto').innerText = dados.objeto.palavra;
-                document.getElementById('diffObjeto').innerText = dados.objeto.nivel;
+                    })
+                    .catch(err => {
+                        console.error('Erro ao conectar na API:', err);
+                        alert('Erro ao buscar palavras no servidor.');
+                        pararJogo();
+                    });
 
-                document.getElementById('wordFigura').innerText = dados.figura.palavra;
-                document.getElementById('diffFigura').innerText = dados.figura.nivel;
+                // Inicia o cronômetro regressivo (ex: 60 segundos)
+                let tempo = 60;
+                timerInterval = setInterval(() => {
+                    let min = Math.floor(tempo / 60);
+                    let seg = tempo % 60;
+                    cronometroEl.textContent = `${min < 10 ? '0' + min : min}:${seg < 10 ? '0' + seg : seg}`;
+                    
+                    if (tempo-- < 0) {
+                        clearInterval(timerInterval);
+                        cronometroEl.textContent = "Tempo Esgotado!";
+                        pararJogo();
+                    }
+                }, 1000);
 
-                iniciarCronometro();
-            } catch (erro) {
-                alert("Erro ao conectar com a API de palavras!");
-                document.getElementById('btnAction').disabled = false;
-                document.getElementById('btnAction').innerText = "Tentar Novamente";
+            } else {
+                // --- PARAR / REINICIAR A QUALQUER MOMENTO ---
+                pararJogo();
             }
         }
 
-        function iniciarCronometro() {
-            if (timerInterval) clearInterval(timerInterval);
-            tempoRestante = 90;
-            atualizarDisplayTempo();
-
-            timerInterval = setInterval(() => {
-                tempoRestante--;
-                atualizarDisplayTempo();
-
-                if (tempoRestante <= 0) {
-                    clearInterval(timerInterval);
-                    alert("⏰ Tempo esgotado!");
-                    document.getElementById('btnAction').disabled = false;
-                    document.getElementById('btnAction').innerText = "Próxima Rodada";
-                }
-            }, 1000);
-        }
-
-        function atualizarDisplayTempo() {
-            let minutos = Math.floor(tempoRestante / 60);
-            let segundos = tempoRestante % 60;
-            document.getElementById('timerDisplay').innerText = 
-                `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+        function pararJogo() {
+            clearInterval(timerInterval);
+            rodando = false;
+            
+            const botao = document.getElementById('btn-acao');
+            botao.textContent = "Iniciar";
+            botao.classList.remove('parar');
+            
+            document.getElementById('cronometro').textContent = "00:00";
+            document.getElementById('futebol').textContent = "-";
+            document.getElementById('objeto').textContent = "-";
+            document.getElementById('figura').textContent = "-";
+            document.getElementById('placas').textContent = "-";
         }
     </script>
 </body>
