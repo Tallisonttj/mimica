@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio das 3 Palavras (API)</title>
+    <style>
+        :root { --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --accent: #38bdf8; }
+        body { font-family: sans-serif; background-color: var(--bg); color: var(--text); padding: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .container { background-color: var(--card-bg); padding: 1.5rem; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; box-sizing: border-box; }
+        .timer { font-size: 2.2rem; font-weight: bold; margin: 0.8rem 0; color: #fbbf24; }
+        .word-card { background: #0f172a; border-radius: 10px; padding: 0.8rem; margin: 0.6rem 0; border-left: 5px solid var(--accent); text-align: left; }
+        .word-category { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; }
+        .word-content { font-size: 1.1rem; font-weight: bold; margin-top: 2px; }
+        .word-difficulty { font-size: 0.75rem; color: #38bdf8; float: right; }
+        button { background-color: #3b82f6; color: white; border: none; padding: 0.8rem; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 1rem; }
+        button:disabled { background-color: #475569; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Desafio Relâmpago</h1>
+        <div class="timer" id="timerDisplay">01:30</div>
+
+        <div class="word-card">
+            <span class="word-difficulty" id="diffFutebol">-</span>
+            <div class="word-category">⚽ Futebol</div>
+            <div class="word-content" id="wordFutebol">Aperte Iniciar</div>
+        </div>
+
+        <div class="word-card">
+            <span class="word-difficulty" id="diffObjeto">-</span>
+            <div class="word-category">📦 Objeto</div>
+            <div class="word-content" id="wordObjeto">Aperte Iniciar</div>
+        </div>
+
+        <div class="word-card">
+            <span class="word-difficulty" id="diffFigura">-</span>
+            <div class="word-category">🌟 Figura Famosa</div>
+            <div class="word-content" id="wordFigura">Aperte Iniciar</div>
+        </div>
+
+        <button id="btnAction" onclick="buscarProximaRodada()">Iniciar Rodada</button>
+    </div>
+
+    <script>
+        // Substitua pelo IP da sua máquina se testar na mesma rede Wi-Fi, ou URL se hospedar no Railway/Render
+        const API_URL = 'http://localhost:3000/api/sortear';
+        let timerInterval = null;
+        let tempoRestante = 90;
+
+        async function buscarProximaRodada() {
+            try {
+                document.getElementById('btnAction').disabled = true;
+                document.getElementById('btnAction').innerText = "Carregando...";
+
+                const resposta = await fetch(API_URL);
+                const dados = await resposta.json();
+
+                document.getElementById('wordFutebol').innerText = dados.futebol.palavra;
+                document.getElementById('diffFutebol').innerText = dados.futebol.nivel;
+
+                document.getElementById('wordObjeto').innerText = dados.objeto.palavra;
+                document.getElementById('diffObjeto').innerText = dados.objeto.nivel;
+
+                document.getElementById('wordFigura').innerText = dados.figura.palavra;
+                document.getElementById('diffFigura').innerText = dados.figura.nivel;
+
+                iniciarCronometro();
+            } catch (erro) {
+                alert("Erro ao conectar com a API de palavras!");
+                document.getElementById('btnAction').disabled = false;
+                document.getElementById('btnAction').innerText = "Tentar Novamente";
+            }
+        }
+
+        function iniciarCronometro() {
+            if (timerInterval) clearInterval(timerInterval);
+            tempoRestante = 90;
+            atualizarDisplayTempo();
+
+            timerInterval = setInterval(() => {
+                tempoRestante--;
+                atualizarDisplayTempo();
+
+                if (tempoRestante <= 0) {
+                    clearInterval(timerInterval);
+                    alert("⏰ Tempo esgotado!");
+                    document.getElementById('btnAction').disabled = false;
+                    document.getElementById('btnAction').innerText = "Próxima Rodada";
+                }
+            }, 1000);
+        }
+
+        function atualizarDisplayTempo() {
+            let minutos = Math.floor(tempoRestante / 60);
+            let segundos = tempoRestante % 60;
+            document.getElementById('timerDisplay').innerText = 
+                `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>

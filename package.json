@@ -1,0 +1,30 @@
+{
+  "name": "mimica",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Tallisonttj/mimica#readme",
+  "bugs": {
+    "url": "https://github.com/Tallisonttj/mimica/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tallisonttj/mimica.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}
